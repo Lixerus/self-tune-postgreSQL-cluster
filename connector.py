@@ -7,7 +7,7 @@ if sys.version_info >= (3, 8) and sys.platform.lower().startswith("win"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 class ConnectorPG():
-    def __init__(self, dbname : str ='pgbench', user : str ='postgres', password : str = '1975', host : str ='localhost'):
+    def __init__(self, dbname : str ='***', user : str ='****', password : str = '****', host : str ='***'):
         self.dbname = dbname
         self.user = user
         self.password = password

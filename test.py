@@ -16,7 +16,7 @@ async def main():
 
     while True:
         try:
-            fname = 'C:\Program Files\PostgreSQL\\14\data\logs\postgresql-2024-04-25_182000.log'
+            fname = '****'
             qp.parse(fname)
             await st_man.monitor_stats(exec)
         except KeyboardInterrupt:

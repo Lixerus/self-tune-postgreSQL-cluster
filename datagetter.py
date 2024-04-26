@@ -1,7 +1,7 @@
 import os, re
 
 class DataGetter():
-    def __init__(self, period : float = 1, dir : str = 'C:\Program Files\PostgreSQL\\14\data\logs', target:str = None):
+    def __init__(self, period : float = 1, dir : str = '****', target:str = None):
         self.period = period
         self.dir = dir
         self.target = target
@@ -22,7 +22,7 @@ class DataGetter():
 
 
 def test():
-    dir : str = "C:\\Program Files\\PostgreSQL\\14\\data\\logs"
+    dir : str = "****"
     print(type(dir))
     last_file_name : str = os.listdir(path=dir)[-1]
     print(last_file_name)

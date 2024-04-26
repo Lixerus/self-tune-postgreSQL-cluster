@@ -16,7 +16,7 @@ async def test():
     sm = stat_manager.Stat_Manager()
     qp = QueryParser(sm)
     print(await sm.asses_dbrw())
-    qp.parse(path = 'C:\Program Files\PostgreSQL\\14\data\logs\postgresql-2024-04-25_182000.log')
+    qp.parse(path = '*****')
     print(await sm.asses_dbrw())
 
 # if __name__ == "__main__":
