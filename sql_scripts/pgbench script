@@ -1,1 +1,0 @@
-pgbench -c 10 -P 10 -T 180 -h localhost -p 5432 -U postgres pgbench

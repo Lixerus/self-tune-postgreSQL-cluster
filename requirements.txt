@@ -1,3 +1,0 @@
-aiopg==1.4.0
-async-timeout==4.0.3
-psycopg2-binary==2.9.9
