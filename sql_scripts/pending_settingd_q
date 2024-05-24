@@ -1,0 +1,56 @@
+WITH current_settings AS (
+    SELECT
+        name,
+        CASE
+            WHEN unit IN ('kB', '8kB', 'MB') THEN pg_catalog.pg_size_pretty(pg_catalog.pg_size_bytes(setting || unit))
+            WHEN unit = 'B' THEN pg_catalog.pg_size_pretty(pg_catalog.pg_size_bytes(setting))
+            -- extract seconds from config with units s and min
+            WHEN unit IN ('s', 'min') THEN floor(extract(epoch from (setting || unit)::interval))::text
+            -- extract milliseconds from config with unit ms
+            WHEN unit = 'ms' THEN floor(extract(epoch from (setting || unit)::interval) * 1000)::text
+            ELSE setting || ' ' || coalesce(unit, '')
+        END AS current_setting,
+        unit,
+        context
+    FROM pg_catalog.pg_settings
+),
+file_settings AS (
+    SELECT
+        row_number() OVER (PARTITION BY pf.name ORDER BY pf.seqno DESC) AS rn,
+        pf.name,
+        CASE
+            WHEN cs.unit IN ('kB', '8kB', 'MB') THEN pg_catalog.pg_size_pretty(pg_catalog.pg_size_bytes(case when not pf.setting ~ '^\-?\d*\.?\d+[a-zA-Z]+$' then pf.setting || cs.unit else pf.setting end))
+            WHEN cs.unit = 'B' THEN pg_catalog.pg_size_pretty(pg_catalog.pg_size_bytes(case when not pf.setting ~ '^\-?\d*\.?\d+B$' and not pf.setting ~ '^\-?\d*\.?\d+[a-zA-Z]+$' then pf.setting || 'bytes' when pf.setting ~ '^\-?\d+B$' then replace(pf.setting, 'B', 'bytes') else pf.setting end))
+            -- extract seconds from config with units s and min
+            WHEN cs.unit IN ('s', 'min') THEN floor(extract(epoch from (case when not pf.setting ~ '^\-?\d*\.?\d+[a-zA-Z]+$' then pf.setting || cs.unit else pf.setting end)::interval))::text
+            -- extract milliseconds from config with unit ms
+            WHEN unit = 'ms' THEN floor(extract(epoch from (case when not pf.setting ~ '^\-?\d*\.?\d+[a-zA-Z]+$' then pf.setting || cs.unit else pf.setting end)::interval) * 1000)::text
+            ELSE setting || ' ' || coalesce(unit, '')
+        END AS file_setting,
+        pf.sourcefile,
+        pf.sourceline,
+        pf.error
+    FROM current_settings AS cs
+    JOIN pg_catalog.pg_file_settings AS pf ON pf.name = cs.name
+)
+SELECT
+    cs.name,
+    cs.current_setting,
+    fs.file_setting AS pending_setting,
+    cs.context,
+    fs.sourcefile,
+    fs.sourceline,
+    fs.error,
+    CASE
+        WHEN cs.current_setting != fs.file_setting AND cs.context != 'postmaster' THEN true::text
+        ELSE 'N/A'
+    END AS pending_reload,
+    CASE
+        WHEN cs.current_setting != fs.file_setting AND cs.context = 'postmaster' THEN true::text
+        ELSE 'N/A'
+    END AS pending_restart
+FROM current_settings AS cs
+JOIN file_settings AS fs ON cs.name = fs.name
+WHERE fs.rn = 1
+AND cs.current_setting != fs.file_setting
+ORDER BY pending_reload DESC;

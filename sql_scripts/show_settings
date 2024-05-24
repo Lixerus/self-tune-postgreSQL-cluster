@@ -1,0 +1,11 @@
+SELECT
+name AS setting_name,
+setting AS setting_value,
+unit AS setting_unit
+FROM pg_settings
+WHERE name IN (
+'max_wal_size',
+'wal_writer_delay',
+'default_statistics_target',
+'commit_delay',
+'max_parallel_workers');

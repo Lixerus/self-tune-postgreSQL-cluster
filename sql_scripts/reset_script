@@ -1,0 +1,4 @@
+ALTER SYSTEM SET max_wal_size TO 1024;
+ALTER SYSTEM SET wal_writer_delay TO 200;
+ALTER SYSTEM SET default_statistics_target TO 100;
+SELECT pg_reload_conf();
